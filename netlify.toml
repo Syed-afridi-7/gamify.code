@@ -1,0 +1,12 @@
+[build]
+  # Tell Netlify that our Next.js frontend is located in the 'frontend' folder
+  base = "frontend"
+  
+  # The default Next.js build command
+  command = "npm run build"
+  
+  # The default output folder for Next.js builds
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "20"
