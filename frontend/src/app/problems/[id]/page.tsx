@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { notFound } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowLeft, Sparkles, Tag, Clock, Cpu, ExternalLink } from "lucide-react";
@@ -24,14 +24,15 @@ const DIFF_STYLES: Record<string, string> = {
   Hard: "text-danger bg-danger/10 border-danger/20",
 };
 
-export default function ProblemPage({ params }: { params: { id: string } }) {
+export default function ProblemPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params);
   const [problem, setProblem] = useState<Problem | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/problems/${params.id}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/problems/${resolvedParams.id}`);
         if (!res.ok) { setLoading(false); return; }
         const data = await res.json();
         setProblem(data);
@@ -40,7 +41,7 @@ export default function ProblemPage({ params }: { params: { id: string } }) {
       }
     }
     load();
-  }, [params.id]);
+  }, [resolvedParams.id]);
 
   if (loading) {
     return (
