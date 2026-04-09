@@ -1,12 +1,16 @@
 [build]
-  # Tell Netlify that our Next.js frontend is located in the 'frontend' folder
+  # Tell Netlify our Next.js app lives in the 'frontend' folder
   base = "frontend"
-  
-  # The default Next.js build command
+
+  # Standard Next.js build command
   command = "npm run build"
-  
-  # The default output folder for Next.js builds
+
+  # Netlify Next.js plugin requires this to be '.next'
   publish = ".next"
 
 [build.environment]
   NODE_VERSION = "20"
+
+# This plugin is REQUIRED for Next.js SSR, API routes, and dynamic pages to work on Netlify
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
