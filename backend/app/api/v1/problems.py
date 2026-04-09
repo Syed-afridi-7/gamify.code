@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from typing import List, Optional
 from app.db.session import get_db
 from app.models.problem import Problem
-from app.schemas.problem import ProblemListResponse
+from app.schemas.problem import ProblemListResponse, Problem as ProblemSchema
 
 router = APIRouter()
 
@@ -16,30 +16,26 @@ async def get_problems(
     difficulty: Optional[str] = None,
     db: AsyncSession = Depends(get_db)
 ):
-    # Calculate offset
     skip = (page - 1) * size
-    
-    # Base query
     query = select(Problem)
-    
-    # Filters
     if topic:
-        # topic_tags is JSON (list of strings)
         query = query.where(Problem.topic_tags.contains([topic]))
     if difficulty:
         query = query.where(Problem.difficulty == difficulty)
-        
-    # Count total
     count_query = select(func.count()).select_from(query.subquery())
     total = (await db.execute(count_query)).scalar()
-    
-    # Fetch items
     result = await db.execute(query.offset(skip).limit(size))
     items = result.scalars().all()
-    
-    return {
-        "items": items,
-        "total": total,
-        "page": page,
-        "size": size
-    }
+    return {"items": items, "total": total, "page": page, "size": size}
+
+@router.get("/{problem_id}", response_model=ProblemSchema)
+async def get_problem(
+    problem_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    query = select(Problem).where(Problem.id == problem_id)
+    result = await db.execute(query)
+    problem = result.scalar_one_or_none()
+    if not problem:
+        raise HTTPException(status_code=404, detail="Problem not found")
+    return problem

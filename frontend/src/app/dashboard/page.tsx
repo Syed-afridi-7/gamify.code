@@ -1,132 +1,196 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import { getProblems, Problem } from "@/lib/api";
 import ProblemCard from "@/components/ProblemCard";
 import { motion } from "framer-motion";
-import { Search, Filter, Trophy, Target, Zap } from "lucide-react";
-import UserMenu from "@/components/UserMenu";
+import { Search, SlidersHorizontal, Trophy, Flame, Target, BarChart3, ChevronRight } from "lucide-react";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
+
+const TOPICS = ["All", "Array", "String", "Dynamic Programming", "Graph", "Tree", "Greedy", "Binary Search", "Stack"];
+const DIFFICULTIES = ["All", "Easy", "Medium", "Hard"];
 
 export default function Dashboard() {
+  const { data: session } = useSession();
   const [problems, setProblems] = useState<Problem[]>([]);
   const [loading, setLoading] = useState(true);
   const [topic, setTopic] = useState("");
   const [difficulty, setDifficulty] = useState("");
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const PAGE_SIZE = 12;
 
   useEffect(() => {
-    async function loadData() {
-      setLoading(true);
-      try {
-        const data = await getProblems(1, 12, topic, difficulty);
-        setProblems(data.items);
-      } catch (error) {
-        console.error("Error loading problems:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
     loadData();
-  }, [topic, difficulty]);
+  }, [topic, difficulty, page]);
+
+  async function loadData() {
+    setLoading(true);
+    try {
+      const data = await getProblems(page, PAGE_SIZE, topic || undefined, difficulty || undefined);
+      setProblems(data.items);
+      setTotal(data.total);
+    } catch (err) {
+      console.error("Error:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
-    <div className="min-h-screen pt-24 px-4 md:px-8 max-w-7xl mx-auto pb-20">
-      {/* Navbar with User Menu */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-foreground/5 py-4 px-8 flex justify-between items-center">
-        <div className="text-xl font-black italic tracking-tighter hover:scale-105 transition-transform cursor-pointer">
-           CLASH<span className="text-primary NOT-italic">CODE</span>
-        </div>
-        <UserMenu />
-      </nav>
-
-      {/* Top Stats Bar */}
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
-        <StatCard icon={<Trophy className="text-yellow-400" />} label="Solved" value="24" />
-        <StatCard icon={<Zap className="text-primary" />} label="Streak" value="12 Days" />
-        <StatCard icon={<Target className="text-secondary" />} label="Next Level" value="450 XP" />
-        <StatCard icon={<Search className="text-accent" />} label="Rank" value="#1,432" />
-      </section>
-
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-10">
-        <div>
-          <h1 className="text-4xl font-black tracking-tight mb-2">
-            DAILY <span className="text-primary">MISSIONS</span>
-          </h1>
-          <p className="text-foreground/60 font-medium">Complete these to keep your streak alive.</p>
-        </div>
-
-        {/* Filters */}
-        <div className="flex flex-wrap gap-3 w-full md:w-auto">
-          <div className="relative flex-1 md:w-64">
-             <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/40" size={16} />
-             <select 
-               onChange={(e) => setDifficulty(e.target.value)}
-               className="w-full bg-foreground/5 border border-foreground/10 rounded-xl py-2.5 pl-10 pr-4 text-sm font-semibold focus:border-primary outline-none transition-all appearance-none"
-             >
-                <option value="">All Difficulties</option>
-                <option value="Easy">Easy</option>
-                <option value="Medium">Medium</option>
-                <option value="Hard">Hard</option>
-             </select>
+    <div className="min-h-screen">
+      {/* Page Header */}
+      <div className="border-b border-white/5 glass">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div>
+              <h1 className="text-3xl font-black tracking-tight mb-1">
+                Practice Arena
+              </h1>
+              <p className="text-foreground/50">
+                {total.toLocaleString()} problems • Solve daily to maintain your streak
+              </p>
+            </div>
+            {session && (
+              <Link
+                href="/arena"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-secondary/30 bg-secondary/10 text-secondary font-semibold text-sm hover:bg-secondary/20 transition-all"
+              >
+                Challenge Someone
+                <ChevronRight size={16} />
+              </Link>
+            )}
           </div>
-          <div className="relative flex-1 md:w-64">
-             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/40" size={16} />
-             <input 
-               type="text" 
-               placeholder="Filte by topic (e.g. Array)"
-               onKeyDown={(e) => e.key === 'Enter' && setTopic(e.currentTarget.value)}
-               className="w-full bg-foreground/5 border border-foreground/10 rounded-xl py-2.5 pl-10 pr-4 text-sm font-semibold focus:border-primary outline-none transition-all"
-             />
+
+          {/* Stats Row */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+            {[
+              { icon: <Trophy size={18} className="text-accent" />, label: "Solved", value: "—" },
+              { icon: <Flame size={18} className="text-orange-400" />, label: "Streak", value: "—" },
+              { icon: <BarChart3 size={18} className="text-primary" />, label: "Level", value: "—" },
+              { icon: <Target size={18} className="text-secondary" />, label: "ELO", value: "1200" },
+            ].map((stat) => (
+              <div key={stat.label} className="flex items-center gap-3 p-4 rounded-xl bg-white/3 border border-white/5">
+                <div className="p-2 rounded-lg bg-white/5">{stat.icon}</div>
+                <div>
+                  <div className="text-xs text-foreground/40 font-medium">{stat.label}</div>
+                  <div className="text-lg font-black">{stat.value}</div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* Problems Grid */}
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="h-64 bg-foreground/5 rounded-2xl border border-foreground/10"></div>
-          ))}
-        </div>
-      ) : (
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-        >
-          {problems.map((problem, index) => (
-            <motion.div
-              key={problem.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
-            >
-              <ProblemCard problem={problem} />
-            </motion.div>
-          ))}
-        </motion.div>
-      )}
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
+        {/* Filters Bar */}
+        <div className="flex flex-col md:flex-row gap-4 mb-8">
+          {/* Search */}
+          <div className="relative flex-1">
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground/30" />
+            <input
+              type="text"
+              placeholder="Filter by topic (press Enter)"
+              className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:border-primary/50 transition-all"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") { setTopic(e.currentTarget.value); setPage(1); }
+              }}
+            />
+          </div>
 
-      {problems.length === 0 && !loading && (
-        <div className="text-center py-20 bg-foreground/5 rounded-3xl border border-dashed border-foreground/10">
-          <p className="text-xl font-bold text-foreground/40 uppercase tracking-widest">No challenges found in this realm</p>
+          {/* Difficulty Filter */}
+          <div className="flex gap-2">
+            {DIFFICULTIES.map((d) => (
+              <button
+                key={d}
+                onClick={() => { setDifficulty(d === "All" ? "" : d); setPage(1); }}
+                className={cn(
+                  "px-4 py-2 rounded-xl text-sm font-semibold transition-all border",
+                  difficulty === (d === "All" ? "" : d)
+                    ? d === "Easy" ? "bg-success/10 border-success/30 text-success"
+                    : d === "Medium" ? "bg-warning/10 border-warning/30 text-warning"
+                    : d === "Hard" ? "bg-danger/10 border-danger/30 text-danger"
+                    : "bg-primary/10 border-primary/30 text-primary"
+                    : "bg-white/5 border-white/10 text-foreground/50 hover:border-white/20"
+                )}
+              >
+                {d}
+              </button>
+            ))}
+          </div>
         </div>
-      )}
+
+        {/* Topic Pills */}
+        <div className="flex gap-2 flex-wrap mb-8">
+          {TOPICS.map((t) => (
+            <button
+              key={t}
+              onClick={() => { setTopic(t === "All" ? "" : t); setPage(1); }}
+              className={cn(
+                "px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border",
+                topic === (t === "All" ? "" : t)
+                  ? "bg-primary/15 border-primary/40 text-primary"
+                  : "bg-white/3 border-white/8 text-foreground/40 hover:border-white/15"
+              )}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+
+        {/* Problem Grid */}
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="h-52 bg-white/3 rounded-2xl border border-white/5 animate-pulse" />
+            ))}
+          </div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
+          >
+            {problems.map((problem, i) => (
+              <motion.div
+                key={problem.id}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.04 }}
+              >
+                <ProblemCard problem={problem} />
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+
+        {/* Pagination */}
+        {total > PAGE_SIZE && (
+          <div className="flex justify-center items-center gap-4 mt-12">
+            <button
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="px-5 py-2.5 rounded-xl border border-white/10 bg-white/5 text-sm font-semibold disabled:opacity-30 hover:border-primary/30 transition-all"
+            >
+              Previous
+            </button>
+            <span className="text-sm text-foreground/40">
+              Page <span className="text-foreground font-bold">{page}</span> of{" "}
+              <span className="text-foreground font-bold">{Math.ceil(total / PAGE_SIZE)}</span>
+            </span>
+            <button
+              onClick={() => setPage(p => p + 1)}
+              disabled={page >= Math.ceil(total / PAGE_SIZE)}
+              className="px-5 py-2.5 rounded-xl border border-white/10 bg-white/5 text-sm font-semibold disabled:opacity-30 hover:border-primary/30 transition-all"
+            >
+              Next
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
-}
-
-function StatCard({ icon, label, value }: { icon: React.ReactNode, label: string, value: string }) {
-  return (
-    <div className="p-4 rounded-2xl bg-foreground/5 border border-foreground/10 flex items-center gap-4">
-      <div className="p-3 rounded-xl bg-background border border-foreground/5 shrink-0">
-        {icon}
-      </div>
-      <div>
-        <div className="text-[10px] uppercase font-bold text-foreground/40 tracking-wider">
-          {label}
-        </div>
-        <div className="text-lg font-black tracking-tight">{value}</div>
-      </div>
-    </div>
-  )
 }
