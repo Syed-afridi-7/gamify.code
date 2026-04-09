@@ -16,7 +16,7 @@ XP_MAP = {
 }
 
 async def seed_problems():
-    print("🚀 Starting problem seeding...")
+    print("Starting problem seeding...")
     
     # Ensure tables are created
     async with engine.begin() as conn:
@@ -25,11 +25,11 @@ async def seed_problems():
     csv_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "competitive_programming_3000.csv")
     
     if not os.path.exists(csv_path):
-        print(f"❌ Error: CSV file not found at {csv_path}")
+        print(f"Error: CSV file not found at {csv_path}")
         return
 
     df = pd.read_csv(csv_path)
-    print(f"📊 Found {len(df)} problems in CSV.")
+    print(f"Found {len(df)} problems in CSV.")
 
     async with SessionLocal() as session:
         count = 0
@@ -55,10 +55,10 @@ async def seed_problems():
             # Commit in batches for efficiency
             if count % 100 == 0:
                 await session.commit()
-                print(f"✅ Loaded {count} problems...")
+                print(f"Loaded {count} problems...")
 
         await session.commit()
-        print(f"🎊 Finished! Total problems seeded: {count}")
+        print(f"Finished! Total problems seeded: {count}")
 
 if __name__ == "__main__":
     asyncio.run(seed_problems())

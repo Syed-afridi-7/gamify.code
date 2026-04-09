@@ -5,6 +5,7 @@ import { getProblems, Problem } from "@/lib/api";
 import ProblemCard from "@/components/ProblemCard";
 import { motion } from "framer-motion";
 import { Search, Filter, Trophy, Target, Zap } from "lucide-react";
+import UserMenu from "@/components/UserMenu";
 
 export default function Dashboard() {
   const [problems, setProblems] = useState<Problem[]>([]);
@@ -29,6 +30,14 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen pt-24 px-4 md:px-8 max-w-7xl mx-auto pb-20">
+      {/* Navbar with User Menu */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-foreground/5 py-4 px-8 flex justify-between items-center">
+        <div className="text-xl font-black italic tracking-tighter hover:scale-105 transition-transform cursor-pointer">
+           CLASH<span className="text-primary NOT-italic">CODE</span>
+        </div>
+        <UserMenu />
+      </nav>
+
       {/* Top Stats Bar */}
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
         <StatCard icon={<Trophy className="text-yellow-400" />} label="Solved" value="24" />

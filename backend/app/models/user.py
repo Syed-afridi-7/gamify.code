@@ -8,6 +8,9 @@ class User(Base):
     name = Column(String, index=True)
     email = Column(String, unique=True, index=True)
     avatar_url = Column(String, nullable=True)
+    hashed_password = Column(String, nullable=True) # Optional for OAuth users
+    provider = Column(String, default="local") # "local" or "google"
+    provider_id = Column(String, unique=True, index=True, nullable=True)
     xp = Column(Integer, default=0)
     current_level = Column(Integer, default=1)
     current_streak = Column(Integer, default=0)
