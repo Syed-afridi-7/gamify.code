@@ -2,7 +2,7 @@
 
 import { signIn } from "next-auth/react";
 import { motion } from "framer-motion";
-import { Zap, ArrowRight, ShieldCheck, Globe, Trophy } from "lucide-react";
+import { Zap, ArrowRight, ShieldCheck, Globe, Trophy, Github } from "lucide-react";
 import Link from "next/link";
 
 export default function SignIn() {
@@ -34,11 +34,11 @@ export default function SignIn() {
         {/* Auth Buttons */}
         <div className="space-y-4 mb-8">
           <button
-            onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+            onClick={() => signIn("github", { callbackUrl: "/dashboard" })}
             className="w-full group flex items-center justify-center gap-3 px-6 py-4 rounded-xl bg-white text-black font-bold text-base transition-all hover:scale-[1.02] active:scale-95"
           >
-            <img src="https://www.google.com/favicon.ico" alt="Google" className="w-5 h-5" />
-            Continue with Google
+            <Github size={20} />
+            Continue with GitHub
             <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform ml-auto" />
           </button>
         </div>

@@ -1,19 +1,19 @@
 import NextAuth from "next-auth";
-import GoogleProvider from "next-auth/providers/google";
+import GithubProvider from "next-auth/providers/github";
 
 const handler = NextAuth({
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID || "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+    GithubProvider({
+      clientId: process.env.GITHUB_ID || "",
+      clientSecret: process.env.GITHUB_SECRET || "",
     }),
   ],
   callbacks: {
-    async signIn({ user, account, profile }) {
-      if (account?.provider === "google") {
+    async signIn({ user, account }) {
+      if (account?.provider === "github") {
         try {
           // Sync with our FastAPI backend
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/auth/sync`, {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://gamifycode-api.onrender.com"}/api/v1/auth/sync`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -22,7 +22,7 @@ const handler = NextAuth({
               email: user.email,
               name: user.name,
               image: user.image,
-              provider: "google",
+              provider: "github",
               provider_id: user.id,
             }),
           });
