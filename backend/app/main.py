@@ -4,7 +4,12 @@ from app.db.session import engine, Base
 from app.models.user import User # Import to register tables
 from app.models.problem import Problem
 
+from app.api.v1.problems import router as problems_router
+
 app = FastAPI(title="ClashCode AI API", version="1.0.0")
+
+# Register routers
+app.include_router(problems_router, prefix="/api/v1/problems", tags=["Problems"])
 
 # Set up CORS
 origins = [
