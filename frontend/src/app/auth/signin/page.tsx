@@ -2,7 +2,7 @@
 
 import { signIn } from "next-auth/react";
 import { motion } from "framer-motion";
-import { Zap, ArrowRight, ShieldCheck, Globe, Trophy, Github } from "lucide-react";
+import { Zap, ArrowRight, ShieldCheck, Globe, Trophy, GitBranch } from "lucide-react";
 import Link from "next/link";
 
 export default function SignIn() {
@@ -37,7 +37,7 @@ export default function SignIn() {
             onClick={() => signIn("github", { callbackUrl: "/dashboard" })}
             className="w-full group flex items-center justify-center gap-3 px-6 py-4 rounded-xl bg-white text-black font-bold text-base transition-all hover:scale-[1.02] active:scale-95"
           >
-            <Github size={20} />
+            <GitBranch size={20} />
             Continue with GitHub
             <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform ml-auto" />
           </button>
